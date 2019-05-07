@@ -1,0 +1,107 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+install.packages("mlbench")
+library(mlbench)
+data("BostonHousing")
+str(BostonHousing)
+```
+
+```{r}
+Boston<- BostonHousing
+library(psych)
+pairs.panels(Boston[c(-4,-14)], cex=1.3)
+```
+
+```{r}
+#Install requisite packages
+install.packages("caTools")
+library(caTools)
+#Set seed to ensure consistency of sample if picked again
+set.seed(123)
+split <- sample.split(Boston,SplitRatio =0.7)
+train <- subset(Boston,split==TRUE)
+test <- subset(Boston,split==FALSE)
+```
+
+```{r}
+install.packages("caret")
+install.packages("mlbench")
+library(caret)
+library(mlbench)
+#creating a 10-fold cross-validation parameter
+Custom<-trainControl(method="repeatedcv",number=10,  repeats=5)
+                    
+```
+
+```{r}
+lm_model<- train(medv ~. , data = train, method='lm', trControl=Custom)
+summary(lm_model)
+lm_model$results
+```
+
+```{r}
+#Ridge regression
+ridge<-train(medv~., data=train, method="glmnet", tuneGrid=expand.grid(alpha=0,lambda=seq(0.001,1,length=10)), trControl=Custom)
+ridge
+```
+```{r}
+plot(ridge)
+plot(ridge$finalModel, xvar="lambda",label=T)
+```
+```{r}
+plot(varImp(ridge, scale=FALSE))
+```
+```{r}
+#LASSO Regression
+set.seed(123)
+Lasso<-train(medv~., data=train, method="glmnet", tuneGrid=expand.grid(alpha=1,lambda=seq(0.001,0.2,length=10)), trControl=Custom)
+Lasso
+
+```
+
+```{r}
+plot(Lasso)
+```
+
+```{r}
+plot(Lasso$finalModel, xvar="lambda",label=T)
+```
+
+```{r}
+require(biglasso)
+data(Boston)
+head(Boston)
+X<-Boston[1:13]#Subsetting our data
+Y<-Boston[14]
+```
+
+```{r}
+X<-as.big.matrix(X)# Converting X into a big matrix object
+Y<-as.big.matrix(Y)
+model_fit<-biglasso(X,Y, screen="SSR-BEDPP")# fit big lasso rule using screening rule SSR- BEDPP
+plot(model_fit)
+```
+
+```{r}
+model_fit <- cv.biglasso(X,Boston$medv, seed = 1234, nfolds = 10, ncores = 4)#Apply a 10-fold cross- validation
+
+summary(model_fit)
+```
+
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
