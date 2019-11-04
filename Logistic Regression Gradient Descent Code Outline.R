@@ -67,14 +67,3 @@ logistic_gradient_descent <- function(alpha, iterations, beta, x, y){
 initial_alpha <- 0.01 #learning rate
 num_iterations <- 10000 #number of times we'll run the loop in the function
 empty_beta <- matrix(c(0,0,0), nrow=3) # initialized parameters (matrix of 0s)
-
-
-#Run logistic regression gradient descent to find beta parameters
-#[fill in all of the arguments for the user-defined logistic gradient descent function]
-output <- logistic_gradient_descent(alpha = , iterations = , beta = , x = , y = )
-
-#Get final estimated parameters from our output object:
-#[call object "output" and stored attribute "parameters", separated by a $, as in object$attribute]
-
-
-#End of Logistic Regression via Gradient Descent Code Outline
