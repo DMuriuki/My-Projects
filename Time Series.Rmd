@@ -1,0 +1,99 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+rm(list=ls())
+#reading in data
+bike<-read.csv(file.choose(), header = T)
+class(bike)
+bike$dteday<-as.Date(bike$dteday,format="%d/%m/%Y")
+str(bike)
+summary(bike)
+```
+
+```{r}
+install.packages("forecast")
+library(forecast)
+data_ts <-msts(bike$cnt, seasonal.periods=c(7)) 
+train_ts <- head(data_ts, round(length(data_ts) * 0.9)) 
+test_ts <- tail(data_ts, round(length(data_ts) * 0.1)) 
+plot.ts(train_ts, xlab="Weeks", ylab="Bike riders")
+
+```
+```{r}
+plot(decompose(train_ts, type="add"), xlab="Weeks")
+```
+```{r}
+#Checking for stationarity
+install.packages("tseries")
+library(tseries)
+adf_test <- adf.test(train_ts, alternative='stationary')
+
+print(adf_test)
+```
+```{r}
+acf_ts <- acf(train_ts[1:length(train_ts)], plot = FALSE)
+plot(acf_ts, main = "Autocorrelation function", cex=0.5)
+```
+```{r}
+pacf_ts <- pacf(train_ts[1:length(train_ts)], plot = FALSE)
+plot(pacf_ts, main = " Partial autocorrelation function")
+```
+
+```{r}
+stat_diff <- diff(train_ts, differences = 1)
+plot(stat_diff, main = " Seasonal Difference", xlab= "Weeks")
+```
+
+```{r}
+acf_ts <- acf(stat_diff[1:length(stat_diff)], plot = FALSE)
+plot(acf_ts, main = "Autocorrelation function")
+```
+
+```{r}
+pacf_ts <- pacf(stat_diff[1:length(stat_diff)], plot = FALSE)
+plot(pacf_ts, main = " Partial autocorrelation function")
+```
+
+```{r}
+library(forecast)
+fit1 <- Arima(train_ts, order=c(7,1,0),seasonal=c(6,1,0), method = "CSS", optim.method = "BFGS")
+forecast_ts <- forecast(fit1,h= length(test_ts))
+autoplot(forecast_ts, xlab="Weeks", ylab= "Bike Riders", main="Forecast from ARIMA") + autolayer(test_ts)
+```
+```{r}
+install.packages("lmtest")
+library(lmtest)
+coeftest(fit1)
+```
+
+```{r}
+confint(fit1)
+```
+
+```{r}
+#Selecting the best model
+
+auto.arima(train_ts, trace=TRUE) 
+```
+
+```{r}
+fit1 <- Arima(train_ts, order=c(0,1,3),seasonal=c(6,1,0), method = "CSS", optim.method = "BFGS")
+forecast_ts <- forecast(fit1,h= length(test_ts))
+autoplot(forecast_ts, xlab="Weeks", ylab= "Bike Riders", main="Forecast from ARIMA") + autolayer(test_ts)
+```
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
